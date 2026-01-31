@@ -36,7 +36,7 @@ Each event is stored as an `EventEntity` with the following key fields:
 - `durationMs`
 - `defectCount`
 
-A **unique constraint on `eventId`** ensures database-level deduplication and helps with thread safety.
+A **unique constraint on `eventId`** is used to enforce deduplication at the database level and assist with thread safety during concurrent ingestion.
 
 ---
 
@@ -46,9 +46,9 @@ Deduplication is based on `eventId` and payload comparison:
 
 - **Same eventId + identical payload** → event is deduped (ignored)
 - **Same eventId + different payload + newer receivedTime** → existing event is updated
-- **Same eventId + different payload + older receivedTime** → ignored
+- **Same eventId + different payload + older receivedTime** → update is ignored
 
-Payload comparison excludes `receivedTime`, as it is metadata added by the backend.
+Payload comparison excludes `receivedTime`, as it is backend-generated metadata and not part of the logical event identity.
 
 ---
 
@@ -59,7 +59,7 @@ Events are rejected if:
 - `durationMs > 6 hours`
 - `eventTime` is more than 15 minutes in the future
 
-A `defectCount` of `-1` is stored but ignored in defect calculations.
+A `defectCount` of `-1` represents an unknown defect count. Such events are stored but ignored in defect-related calculations.
 
 Validation logic is isolated in a dedicated validator class.
 
@@ -68,19 +68,20 @@ Validation logic is isolated in a dedicated validator class.
 ## Thread Safety
 
 Thread safety is achieved through:
-- Transactional boundaries (`@Transactional`)
-- Database unique constraint on `eventId`
-- No shared mutable state in service logic
+- Transactional boundaries using `@Transactional`
+- Database-level unique constraint on `eventId`
+- Stateless service logic with no shared mutable in-memory state
 
-Concurrency is verified using a test that performs parallel ingestion requests.
+Concurrency behavior is verified using tests that simulate parallel ingestion requests.
 
 ---
 
 ## Performance Strategy
 
-- Batch ingestion is handled within a single transaction
-- JPA is used with simple queries and indexing on `eventId`
-- The system processes a batch of 1000 events well under the required 1 second on a standard laptop
+- Events are ingested in batches within a single transaction
+- Simple JPA queries are used with indexing on `eventId`
+- No unnecessary synchronization or locking is used
+- The system processes a batch of **1000 events under 1 second** on a standard laptop
 
 See `BENCHMARK.md` for details.
 
@@ -92,10 +93,10 @@ See `BENCHMARK.md` for details.
 Ingests a batch of events.
 
 Response includes:
-- accepted
-- deduped
-- updated
-- rejected
+- `accepted`
+- `deduped`
+- `updated`
+- `rejected`
 - rejection reasons
 
 ### GET `/stats`
@@ -105,43 +106,44 @@ Query parameters:
 - `end` (exclusive)
 
 Returns:
-- eventsCount
-- defectsCount
-- avgDefectRate
-- status (`Healthy` or `Warning`)
+- `eventsCount`
+- `defectsCount`
+- `avgDefectRate`
+- `status` (`Healthy` or `Warning`)
 
 ---
 
 ## Tests
 
 The project includes tests covering:
-1. Duplicate event deduplication
-2. Update with newer receivedTime
+1. Deduplication of identical events
+2. Updates with newer `receivedTime`
 3. Ignoring older updates
-4. Invalid duration rejection
-5. Future eventTime rejection
-6. Ignoring defectCount = -1 in stats
-7. Correct time window handling
+4. Rejection of invalid duration
+5. Rejection of future `eventTime`
+6. Ignoring `defectCount = -1` in stats
+7. Correct handling of start/end time boundaries
 8. Thread safety under concurrent ingestion
+
+---
+
+## Edge Cases & Assumptions
+
+- `receivedTime` from the request payload is ignored and always set by the backend
+- Validation is applied before deduplication
+- Events with `defectCount = -1` are excluded from defect calculations
+- Deduplication is strictly based on `eventId`
+- Concurrent updates are resolved using transactional semantics and database constraints
+
+These decisions were made to keep the system deterministic, simple, and aligned with the problem statement.
 
 ---
 
 ## Setup & Run Instructions
 
-1. Ensure Java (8 or higher) and Maven are installed
+1. Ensure **Java 17** is installed
 2. Clone the repository
-3. Run:
+3. Run tests:
    ```bash
-   mvn clean test
-4. To start the application:
-    mvn spring-boot:run
+   ./mvnw.cmd clean test
 
-Improvements With More Time
-
-Add pagination and filtering options
-
-Improve error handling with custom exceptions
-
-Add database indexes for large-scale data
-
-Introduce async ingestion for higher throughput

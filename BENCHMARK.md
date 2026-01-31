@@ -1,46 +1,39 @@
+# BENCHMARK – Event Ingestion Performance
 
----
+## Laptop Specifications
 
-# 📄 BENCHMARK.md
-
-```md
-# Benchmark – Event Ingestion Performance
-
-## Test Environment
-
-- CPU: Intel i5 / equivalent
+- CPU: AMD Ryzen 5 7520U (2.80 GHz)
 - RAM: 8 GB
-- OS: Windows / Linux
-- Java Version: Java 8+
+- OS: Windows 11 (64-bit)
+- Java Version: Java 17
 - Database: H2 (in-memory)
 
 ---
 
 ## Benchmark Scenario
 
-- Ingest a single batch of **1000 valid events**
-- Measure total ingestion time for the `/events/batch` operation
+- Ingest one batch of **1000 events**
+- Endpoint: `POST /events/batch`
+- Events include valid events, duplicates, and defectCount = -1 cases
 
 ---
 
 ## Command Used
 
 ```bash
-mvn test
+./mvnw.cmd clean test
+```
 
+---
 
-Measured Result
+## Measured Result
 
-Time to ingest 1000 events: ~150–300 ms
+- Time to ingest 1000 events: ~400 ms
+- Result: Under the required 1 second limit 
 
-Well within the required < 1 second limit
+---
 
-Optimizations Applied
+## Optimizations
 
-Batch processing within a single transaction
-
-Minimal object creation
-
-Database-level uniqueness constraint for deduplication
-
-Simple, direct JPA queries without unnecessary joins
+- Batch processing instead of individual event ingestion
+- Deduplication using eventId
