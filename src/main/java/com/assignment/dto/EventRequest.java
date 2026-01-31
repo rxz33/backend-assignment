@@ -10,7 +10,6 @@ public class EventRequest {
     private long durationMs;
     private int defectCount;
 
-    // ---- getters ----
     public String getEventId() {
         return eventId;
     }
@@ -31,7 +30,6 @@ public class EventRequest {
         return defectCount;
     }
 
-    // ---- setters (IMPORTANT FIX) ----
     public void setEventId(String eventId) {
         this.eventId = eventId;
     }

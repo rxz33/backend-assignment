@@ -21,8 +21,6 @@ public class EventService {
         this.eventRepository = eventRepository;
     }
 
-    // ---------------- INGEST ----------------
-
     @Transactional
     public BatchIngestResponse ingestBatch(List<EventRequest> requests) {
 
@@ -79,8 +77,6 @@ public class EventService {
 
         return response;
     }
-
-    // ---------------- STATS ----------------
 
     @Transactional(readOnly = true)
     public StatsResult getStats(String machineId, Instant start, Instant end) {

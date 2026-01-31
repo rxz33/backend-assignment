@@ -47,7 +47,6 @@ class ConcurrencyTest {
         executor.invokeAll(tasks);
         executor.shutdown();
 
-        // If no exception occurred, concurrency handling is acceptable
         assertTrue(true);
     }
 }

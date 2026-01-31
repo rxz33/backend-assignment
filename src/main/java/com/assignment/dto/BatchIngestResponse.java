@@ -32,7 +32,6 @@ public class BatchIngestResponse {
         return rejections;
     }
 
-    // increment helpers
     public void incrementAccepted() {
         this.accepted++;
     }
@@ -53,7 +52,6 @@ public class BatchIngestResponse {
         this.rejections.add(new Rejection(eventId, reason));
     }
 
-    // inner class for rejection details
     public static class Rejection {
         private String eventId;
         private String reason;

@@ -11,7 +11,7 @@ public class EventValidator {
     private static final Duration FUTURE_TIME_LIMIT = Duration.ofMinutes(15);
 
     private EventValidator() {
-        // utility class, no instances
+        
     }
 
     public static void validate(EventRequest event) {

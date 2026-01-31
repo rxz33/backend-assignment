@@ -52,7 +52,6 @@ public class EventEntity {
         this.defectCount = defectCount;
     }
 
-    // -------- getters --------
     public Long getId() {
         return id;
     }
@@ -81,8 +80,6 @@ public class EventEntity {
         return defectCount;
     }
 
-    // -------- business helpers --------
-
     public boolean hasSamePayload(EventEntity other) {
         if (other == null) return false;
 
@@ -97,7 +94,6 @@ public class EventEntity {
         return this.receivedTime.isAfter(other.getReceivedTime());
     }
 
-    // -------- update method (VS Code safe) --------
     public void updateFrom(EventEntity other) {
         this.eventTime = other.getEventTime();
         this.receivedTime = other.getReceivedTime();

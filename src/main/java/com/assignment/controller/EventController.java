@@ -19,10 +19,6 @@ public class EventController {
         this.eventService = eventService;
     }
 
-    /**
-     * POST /events/batch
-     * Ingest batch of events
-     */
     @PostMapping("/events/batch")
     public BatchIngestResponse ingestBatch(
             @RequestBody List<EventRequest> requests
@@ -30,10 +26,6 @@ public class EventController {
         return eventService.ingestBatch(requests);
     }
 
-    /**
-     * GET /stats
-     * Query stats for a machine in time window
-     */
     @GetMapping("/stats")
     public StatsResult getStats(
             @RequestParam String machineId,
